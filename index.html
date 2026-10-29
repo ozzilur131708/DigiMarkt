@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f8a5b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Insight">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Kalkulator Insight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#eef2f0;--card:#fff;--ink:#16221f;--mute:#5d6b67;--line:#d5dedb;--acc:#1f8a5b;--sel:#e4eeea;--sh:rgba(0,0,0,.2);--bad:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#121816;--card:#1a2320;--ink:#e8efed;--mute:#9bacA7;--line:#2c3935;--sel:#24322d}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Bricolage Grotesque",system-ui,sans-serif}
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:6px;padding:8px;padding-top:calc(8px + env(safe-area-inset-top));background:var(--acc);color:#fff}
+.ib{width:44px;height:44px;border:0;background:none;color:inherit;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.ib:active{background:rgba(255,255,255,.22)}
+.ttl{flex:1;min-width:0}.ttl b{display:block;font-size:1.15rem;font-weight:800;line-height:1.2}.ttl small{opacity:.9}
+main{max-width:720px;margin:0 auto;padding:16px 14px calc(120px + env(safe-area-inset-bottom))}
+.pg{display:none}.pg.on{display:block}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.seg button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:.92rem;padding:11px 2px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--acc);color:#fff;font-weight:600}
+label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
+input,select{width:100%;min-height:50px;font:inherit;font-size:1rem;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.fields{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:520px){.fields{grid-template-columns:1fr 1fr}}
+.card-h{font-weight:700;margin:18px 0 8px;display:flex;justify-content:space-between;align-items:baseline}
+.hint{font-size:.82rem;color:var(--mute);font-weight:400}
+.res{background:var(--card);border:1.5px solid var(--line);border-left:5px solid var(--acc);border-radius:12px;padding:11px 13px}
+.res b{display:block;font-size:1.35rem;font-weight:800;line-height:1.25;word-break:break-word}
+.res small{display:block;color:var(--mute);font-size:.82rem;line-height:1.35}
+.res .d{font-size:.82rem;font-weight:600;color:var(--acc)}
+.res .d.bad{color:var(--bad)}
+.row2{margin-top:10px}
+.cta{width:100%;min-height:54px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:inherit;font-weight:800;font-size:1.05rem;margin-top:16px;cursor:pointer}
+.link{border:0;background:none;color:var(--acc);font:inherit;font-weight:600;padding:8px 0;cursor:pointer}
+.tw{overflow-x:auto;background:var(--card);border:1.5px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+td button{border:0;background:none;color:var(--mute);cursor:pointer;font:inherit;text-decoration:underline;padding:6px}
+h3{font-size:1rem;margin:20px 0 6px}
+.empty{color:var(--mute);padding:14px}
+.note{color:var(--mute);font-size:.85rem;margin-top:14px}
+.sp{margin-top:12px}
+nav.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom)}
+nav button{border:0;background:none;color:var(--mute);font:inherit;font-size:.74rem;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 7px;min-height:58px;cursor:pointer;position:relative}
+nav button[aria-current=page]{color:var(--acc);font-weight:700}
+nav .mid{color:var(--ink);font-weight:600;justify-content:flex-end}
+nav .fab{position:absolute;top:-24px;left:50%;margin-left:-31px;width:62px;height:62px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;box-shadow:0 4px 14px var(--sh);border:4px solid var(--bg)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.ov.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:min(300px,82vw);background:var(--card);z-index:31;transform:translateX(-100%);transition:transform .25s;padding:calc(20px + env(safe-area-inset-top)) 14px 20px;visibility:hidden}
+.drawer.on{transform:none;visibility:visible}
+.drawer h2{font-size:1rem;color:var(--mute);font-weight:600;margin:6px 8px 10px}
+.cat{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--ink);font:inherit;padding:14px 12px;border-radius:12px;cursor:pointer;text-align:left}
+.cat[aria-current=true]{background:var(--sel);font-weight:700}
+.cat i{width:14px;height:14px;border-radius:50%;flex:none}
+.pop{position:fixed;top:calc(56px + env(safe-area-inset-top));right:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px var(--sh);z-index:40;min-width:250px;overflow:hidden;display:none}
+.pop.on{display:block}
+.pop button{display:block;width:100%;text-align:left;padding:15px 16px;background:none;border:0;color:var(--ink);font:inherit;cursor:pointer}
+.pop button+button{border-top:1px solid var(--line)}
+.pop .dg{color:var(--bad)}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:720px;margin:0 auto;z-index:41;background:var(--card);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .25s;visibility:hidden}
+.sheet.on{transform:none;visibility:visible}
+.sheet h2{margin:0 0 4px;font-size:1.15rem}
+.opt{display:block;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit;border-radius:12px;padding:14px;margin-top:10px;cursor:pointer}
+.opt b{display:block}.opt small{color:var(--mute)}
+.opt.p{border-color:var(--acc);background:var(--sel)}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#16221f;color:#fff;padding:10px 18px;border-radius:22px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){.drawer,.sheet,.ov,.toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="ib" id="mnu" aria-label="Buka menu kategori"></button>
+  <div class="ttl"><b id="ct"></b><small id="pt"></small></div>
+  <button class="ib" id="dots" aria-label="Menu lainnya" aria-haspopup="true"></button>
+</header>
+
+<main>
+  <section class="pg" id="p-input">
+    <label>Jenis periode</label>
+    <div class="seg per"></div>
+    <div class="grid sp">
+      <div><label for="dari">Dari tanggal</label><input id="dari" type="date"></div>
+      <div><label for="sampai">Sampai tanggal</label><input id="sampai" type="date"></div>
+    </div>
+    <div class="card-h">Angka <span class="hint">kosong dihitung 0</span></div>
+    <div class="fields" id="inputs"></div>
+    <button class="cta" id="save">Simpan & lihat hasil</button>
+    <p class="note">Tekan Enter di keyboard untuk pindah ke kolom berikutnya.</p>
+  </section>
+
+  <section class="pg" id="p-hasil">
+    <button class="link" id="toIn">✎ Ubah input</button>
+    <div id="hnote"></div>
+    <div class="grid" id="results"></div>
+  </section>
+
+  <section class="pg" id="p-grafik">
+    <div class="fields sp">
+      <div><label for="tm">Bulan (kosongkan untuk semua)</label><input id="tm" type="month"></div>
+      <div><label for="tmet">Metrik</label><select id="tmet"></select></div>
+    </div>
+    <div class="tw sp" style="padding:12px"><div style="position:relative;height:280px"><canvas id="cv"></canvas></div></div>
+    <div class="grid sp" id="tsum"></div>
+    <p class="note">Grafik memakai semua data tersimpan (harian, mingguan, bulanan, tahunan), diurutkan menurut tanggal. Hari tanpa input tidak memutus grafik.</p>
+  </section>
+
+  <section class="pg" id="p-analisis">
+    <div id="ana" class="sp"></div>
+    <p class="note">Metrik biaya (CPC, CPM, CPA, CAC) dianggap membaik jika turun. Metrik lain dianggap membaik jika naik.</p>
+  </section>
+
+  <section class="pg" id="p-riwayat">
+    <div class="seg per"></div>
+    <div class="tw sp" id="hist"></div>
+    <p class="note">Data tersimpan di browser ini saja (localStorage) dan tidak dikirim ke mana pun. Unduh Excel secara berkala sebagai cadangan.</p>
+  </section>
+</main>
+
+<nav class="bar" id="nav"></nav>
+
+<div class="ov" id="ov"></div>
+<aside class="drawer" id="drawer" aria-label="Kategori"><h2>Pilih kategori</h2><div id="cats"></div></aside>
+<div class="pop" id="pop">
+  <button id="m-ex">Isi data contoh</button>
+  <button id="m-clr">Kosongkan form input</button>
+  <button id="m-in">Buka input data</button>
+  <button id="m-del" class="dg">Hapus semua riwayat kategori ini</button>
+</div>
+<div class="sheet" id="sheet" role="dialog" aria-label="Unduh laporan">
+  <h2>Unduh laporan</h2>
+  <button class="opt p" id="s-all"><b>Semua tab (Excel)</b><small>Satu file, satu sheet untuk tiap kategori</small></button>
+  <button class="opt" id="s-one"><b>Halaman ini saja (Excel)</b><small id="s-one-t"></small></button>
+  <button class="opt" id="s-csv"><b>CSV kategori ini</b><small>Format sederhana untuk diolah ulang</small></button>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const D=(a,b)=>b?a/b:NaN;
+const LOW=new Set(['CPC','CPM','CPA','CAC']);
+const T={
+mkt:{name:'Digital Marketing',color:'#1f8a5b',
+ inp:[['reach','Reach (akun unik)'],['imp','Impressions'],['klik','Klik'],['biaya','Biaya iklan (Rp)'],['konv','Konversi'],['rev','Revenue (Rp)'],['lain','Biaya lain di luar iklan (Rp), opsional'],['bm','Total biaya marketing untuk CAC (Rp)'],['plg','Pelanggan baru']],
+ out:[
+ ['Frequency',d=>D(d.imp,d.reach),'n','Impressions ÷ Reach'],
+ ['CTR',d=>D(d.klik,d.imp),'p','Klik ÷ Impressions'],
+ ['CPC',d=>D(d.biaya,d.klik),'rp','Biaya iklan ÷ Klik'],
+ ['CPM',d=>D(d.biaya,d.imp)*1000,'rp','Biaya iklan ÷ Impressions × 1.000'],
+ ['CPA',d=>D(d.biaya,d.konv),'rp','Biaya iklan ÷ Konversi'],
+ ['CVR',d=>D(d.konv,d.klik),'p','Konversi ÷ Klik'],
+ ['ROAS',d=>D(d.rev,d.biaya),'x','Revenue ÷ Biaya iklan'],
+ ['ROI',d=>D(d.rev-d.biaya-d.lain,d.biaya+d.lain),'p','(Revenue − Biaya) ÷ Biaya'],
+ ['CAC',d=>D(d.bm,d.plg),'rp','Total biaya marketing ÷ Pelanggan baru']],
+ ex:{reach:120000,imp:350000,klik:5250,biaya:350000,konv:50,rev:3500000,lain:0,bm:1000000,plg:100}},
+cre:{name:'Content Creator',color:'#a86a00',
+ inp:[['views','Views'],['fa','Followers awal'],['fk','Followers akhir'],['like','Likes'],['com','Comments'],['sh','Shares'],['sv','Saves'],['pv','Kunjungan profil'],['konv','Konversi / aksi target']],
+ out:[
+ ['Followers Growth',d=>D(d.fk-d.fa,d.fa),'p','(Akhir − Awal) ÷ Awal'],
+ ['Engagement',d=>d.like+d.com+d.sh+d.sv,'n','Like + Comment + Share + Save'],
+ ['Engagement Rate',d=>D(d.like+d.com+d.sh+d.sv,d.views),'p','Engagement ÷ Views'],
+ ['Like Rate',d=>D(d.like,d.views),'p','Likes ÷ Views'],
+ ['Comment Rate',d=>D(d.com,d.views),'p','Comments ÷ Views'],
+ ['Share Rate',d=>D(d.sh,d.views),'p','Shares ÷ Views'],
+ ['Save Rate',d=>D(d.sv,d.views),'p','Saves ÷ Views'],
+ ['Profile Visit Rate',d=>D(d.pv,d.views),'p','Kunjungan profil ÷ Views'],
+ ['Conversion Rate',d=>D(d.konv,d.views),'p','Konversi ÷ Views']],
+ ex:{views:125000,fa:10000,fk:11500,like:8000,com:1200,sh:600,sv:200,pv:2500,konv:500}},
+smm:{name:'Social Media Specialist',color:'#cc2f6a',
+ inp:[['reach','Reach'],['imp','Impressions'],['views','Views'],['fa','Followers awal'],['fk','Followers akhir'],['like','Likes'],['com','Comments'],['sh','Shares'],['sv','Saves'],['klik','Klik link'],['pv','Kunjungan profil'],['konv','Konversi (mis. pembelian)']],
+ out:[
+ ['Followers Growth Rate',d=>D(d.fk-d.fa,d.fa),'p','(Akhir − Awal) ÷ Awal'],
+ ['Engagement',d=>d.like+d.com+d.sh+d.sv,'n','Like + Comment + Share + Save'],
+ ['ER by Reach',d=>D(d.like+d.com+d.sh+d.sv,d.reach),'p','Engagement ÷ Reach'],
+ ['ER by Followers',d=>D(d.like+d.com+d.sh+d.sv,d.fk),'p','Engagement ÷ Followers akhir'],
+ ['CTR',d=>D(d.klik,d.imp),'p','Klik link ÷ Impressions'],
+ ['Profile Visit Rate',d=>D(d.pv,d.imp),'p','Kunjungan profil ÷ Impressions'],
+ ['CVR',d=>D(d.konv,d.klik),'p','Konversi ÷ Klik']],
+ ex:{reach:10000,imp:8000,views:25000,fa:10000,fk:11500,like:250,com:40,sh:30,sv:20,klik:120,pv:320,konv:24}}
+};
+const P={harian:'Harian',mingguan:'Mingguan',bulanan:'Bulanan',tahunan:'Tahunan'};
+const PG={input:'Input data',hasil:'Perhitungan',grafik:'Grafik',analisis:'Analisis',riwayat:'Riwayat'};
+let tab='mkt',per='mingguan',page='input',chart;
+const $=id=>document.getElementById(id);
+const nf=new Intl.NumberFormat('id-ID',{maximumFractionDigits:2});
+const fmt=(v,t)=>{if(!isFinite(v))return '–';
+ if(t==='p')return nf.format(v*100)+'%';if(t==='rp')return 'Rp'+nf.format(v);if(t==='x')return nf.format(v)+'x';return nf.format(v)};
+const fd=s=>s.split('-').reverse().join('/');
+const lab=e=>e.dari&&e.sampai?fd(e.dari)+' – '+fd(e.sampai):(e.lbl||'(tanpa tanggal)');
+const today=()=>new Date().toLocaleDateString('sv-SE');
+const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return d.toLocaleDateString('sv-SE')};
+function autoEnd(){const v=$('dari').value;if(!v)return;const d=new Date(v+'T00:00:00');let e;
+ if(per==='harian')e=v;else if(per==='mingguan')e=addD(v,6);
+ else if(per==='bulanan')e=new Date(d.getFullYear(),d.getMonth()+1,0).toLocaleDateString('sv-SE');
+ else e=d.getFullYear()+'-12-31';$('sampai').value=e}
+const key=t=>'kmetrik:'+t;
+const load=t=>{try{return JSON.parse(localStorage.getItem(key(t)))||[]}catch(e){return[]}};
+const store=(t,a)=>{try{localStorage.setItem(key(t),JSON.stringify(a))}catch(e){alert('Penyimpanan browser tidak tersedia.')}};
+const sortedPer=()=>load(tab).filter(e=>e.per===per).sort((x,y)=>(x.dari||'').localeCompare(y.dari||''));
+const allPer=()=>load(tab).sort((x,y)=>(x.dari||'').localeCompare(y.dari||''));
+const read=()=>{const d={};T[tab].inp.forEach(([k])=>d[k]=parseFloat($('f_'+k).value)||0);return d};
+const hasData=d=>Object.values(d).some(v=>v);
+const ic=d=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+let tt;const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800)};
+
+/* layar */
+const ov=$('ov');
+const closeAll=()=>{['drawer','pop','sheet'].forEach(i=>$(i).classList.remove('on'));ov.classList.remove('on')};
+const openP=id=>{closeAll();$(id).classList.add('on');ov.classList.add('on')};
+ov.onclick=closeAll;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
+$('mnu').innerHTML=ic('M4 6h16M4 12h16M4 18h16');
+$('dots').innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
+$('mnu').onclick=()=>openP('drawer');$('dots').onclick=()=>openP('pop');
+const NAV=[['hasil','Perhitungan','M5 4h14v16H5zM8 8h8M8 12h8M8 16h5'],['grafik','Grafik','M4 19V5M4 19h16M7 15l4-4 3 3 5-6'],['dl','Unduh','M12 4v11M7 11l5 5 5-5M5 20h14'],['analisis','Analisis','M4 20V10M10 20V4M16 20v-7M22 20H2'],['riwayat','Riwayat','M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z']];
+$('nav').innerHTML=NAV.map(([p,l,d])=>p==='dl'?`<button class="mid" id="dl" aria-label="Unduh laporan"><span class="fab">${ic(d)}</span><span>${l}</span></button>`:`<button data-p="${p}">${ic(d)}<span>${l}</span></button>`).join('');
+document.querySelectorAll('nav [data-p]').forEach(b=>b.onclick=()=>go(b.dataset.p));
+$('dl').onclick=()=>{$('s-one-t').textContent=T[tab].name;openP('sheet')};
+function go(p){page=p;document.querySelectorAll('.pg').forEach(s=>s.classList.toggle('on',s.id==='p-'+p));
+ $('nav').style.display=p==='input'?'none':'grid';
+ document.querySelectorAll('nav [data-p]').forEach(b=>b.setAttribute('aria-current',b.dataset.p===p?'page':'false'));
+ $('pt').textContent=PG[p];
+ if(p==='grafik')drawTrend();if(p==='analisis')drawAna();
+ scrollTo(0,0)}
+
+/* kategori, periode, form */
+function drawCats(){$('cats').innerHTML=Object.keys(T).map(k=>`<button class="cat" data-k="${k}" aria-current="${k===tab}"><i style="background:${T[k].color}"></i>${T[k].name}</button>`).join('');
+ $('cats').querySelectorAll('button').forEach(b=>b.onclick=()=>{setCat(b.dataset.k);closeAll()})}
+function setCat(k){tab=k;const c=T[k].color;document.documentElement.style.setProperty('--acc',c);
+ document.querySelector('meta[name=theme-color]').content=c;$('ct').textContent=T[k].name;
+ $('tmet').innerHTML=T[k].out.map((o,i)=>`<option value="${i}">${o[0]}</option>`).join('');
+ drawCats();drawForm();refresh()}
+function drawPer(){document.querySelectorAll('.per').forEach(c=>{
+ c.innerHTML=Object.keys(P).map(k=>`<button data-k="${k}" aria-pressed="${k===per}">${P[k]}</button>`).join('');
+ c.querySelectorAll('button').forEach(b=>b.onclick=()=>{per=b.dataset.k;drawPer();autoEnd();refresh()})})}
+function drawForm(){
+ const inp=T[tab].inp;
+ $('inputs').innerHTML=inp.map(([k,l])=>`<div><label for="f_${k}">${l}</label><input id="f_${k}" type="number" min="0" step="any" inputmode="decimal" enterkeyhint="next" placeholder="0"></div>`).join('');
+ inp.forEach(([k],i)=>{const el=$('f_'+k);
+  el.addEventListener('input',calc);
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();
+   if(i<inp.length-1)$('f_'+inp[i+1][0]).focus();else $('save').click()}})})}
+
+/* hasil */
+function prevEntry(){const dr=$('dari').value;return sortedPer().filter(e=>!dr||!e.dari||e.dari<dr).pop()}
+function calc(){
+ const d=read(),h=hasData(d),a=sortedPer();
+ let src=d,base=null,hn='';
+ if(h){base=prevEntry()}
+ else if(a.length){const e=a[a.length-1];src=e.d;base=a[a.length-2]||null;
+  hn=`<div class="note">Menampilkan periode tersimpan: <b>${lab(e)}</b></div>`}
+ else{hn='<div class="empty">Belum ada angka. Isi di menu Input, hasilnya langsung muncul di sini.</div>'}
+ $('hnote').innerHTML=hn;
+ $('results').innerHTML=T[tab].out.map(([n,f,t,r])=>{
+  const v=f(src);let dl='';
+  if(base&&isFinite(v)){const o=f(base.d);
+   if(isFinite(o)&&o!==0){const c=(v-o)/Math.abs(o)*100;
+    const good=LOW.has(n)?c<=0:c>=0;
+    dl=`<span class="d ${good?'':'bad'}">${c>=0?'▲':'▼'} ${nf.format(Math.abs(c))}% dari ${lab(base)}</span>`}}
+  return `<div class="res"><small>${n}</small><b>${fmt(v,t)}</b><small>${r}</small>${dl}</div>`}).join('')}
+
+/* grafik */
+function drawTrend(){
+ const tm=$('tm').value,mi=+$('tmet').value||0,[mn,f,t]=T[tab].out[mi];
+ const a=allPer().filter(e=>e.dari&&(!tm||e.dari.slice(0,7)===tm));
+ const pts=a.map(e=>({e,v:f(e.d)})).filter(x=>isFinite(x.v));
+ if(chart){chart.destroy();chart=null}
+ if(typeof Chart==='undefined'){$('tsum').innerHTML='<div class="empty">Pustaka grafik gagal dimuat (perlu internet).</div>';return}
+ if(pts.length<2){$('tsum').innerHTML=`<div class="empty">Butuh minimal 2 data untuk menampilkan tren${tm?' pada bulan ini':''}. Saat ini ada ${pts.length}.</div>`;return}
+ const css=getComputedStyle(document.documentElement),sc=t==='p'?100:1,ac=css.getPropertyValue('--acc').trim();
+ Chart.defaults.color=css.getPropertyValue('--mute').trim();
+ chart=new Chart($('cv'),{type:'line',data:{labels:pts.map(x=>fd(x.e.dari).slice(0,5)),
+  datasets:[{label:mn,data:pts.map(x=>x.v*sc),borderColor:ac,backgroundColor:ac,tension:.25,pointRadius:4}]},
+  options:{maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>lab(pts[i[0].dataIndex].e),label:c=>fmt(pts[c.dataIndex].v,t)}}},
+  scales:{y:{grid:{color:css.getPropertyValue('--line').trim()},ticks:{callback:v=>t==='p'?nf.format(v)+'%':nf.format(v)}},x:{grid:{display:false}}}}});
+ const first=pts[0],last=pts[pts.length-1],mx=pts.reduce((m,x)=>x.v>m.v?x:m),mnn=pts.reduce((m,x)=>x.v<m.v?x:m);
+ const ch=first.v?(last.v-first.v)/Math.abs(first.v)*100:NaN;
+ const c=(h,x,s)=>`<div class="res"><small>${h}</small><b>${x}</b><small>${s}</small></div>`;
+ $('tsum').innerHTML=c('Perubahan awal ke akhir',isFinite(ch)?(ch>=0?'▲ ':'▼ ')+nf.format(Math.abs(ch))+'%':'–',fmt(first.v,t)+' → '+fmt(last.v,t))+
+  c('Tertinggi',fmt(mx.v,t),lab(mx.e))+c('Terendah',fmt(mnn.v,t),lab(mnn.e))+c('Rata-rata',fmt(pts.reduce((s,x)=>s+x.v,0)/pts.length,t),pts.length+' periode')}
+
+/* analisis */
+function drawAna(){
+ const a=allPer(),O=T[tab].out,box=$('ana');
+ if(a.length<2){box.innerHTML=`<div class="empty">Butuh minimal 2 data untuk analisis. Saat ini ada ${a.length}.</div>`;return}
+ const cur=a[a.length-1],prv=a[a.length-2];
+ const rows=O.map(([n,f,t])=>{const v=f(cur.d),o=f(prv.d);
+  const c=isFinite(v)&&isFinite(o)&&o!==0?(v-o)/Math.abs(o)*100:NaN;
+  const good=LOW.has(n)?-1:1;
+  return{n,t,v,o,c,ok:c*good>=0}}).filter(r=>isFinite(r.c));
+ const up=rows.filter(r=>r.ok&&r.c!==0).length,dn=rows.filter(r=>!r.ok).length;
+ const top=[...rows].sort((x,y)=>Math.abs(y.c)-Math.abs(x.c)).slice(0,3);
+ box.innerHTML=
+  `<div class="res"><small>${lab(cur)} dibanding ${lab(prv)}</small><b>${up} membaik · ${dn} memburuk</b><small>dari ${rows.length} metrik yang bisa dibandingkan</small></div>`+
+  `<h3>Perubahan terbesar</h3>`+
+  top.map(r=>`<div class="res row2"><small>${r.n}</small><b>${fmt(r.v,r.t)}</b><span class="d ${r.ok?'':'bad'}">${r.c>=0?'▲':'▼'} ${nf.format(Math.abs(r.c))}% dari ${fmt(r.o,r.t)}</span></div>`).join('')+
+  `<h3>Semua metrik</h3><div class="tw"><table><tr><th>Metrik</th><th>Sekarang</th><th>Sebelumnya</th><th>Perubahan</th></tr>`+
+  rows.map(r=>`<tr><td>${r.n}</td><td>${fmt(r.v,r.t)}</td><td>${fmt(r.o,r.t)}</td><td class="${r.ok?'':'bad'}" style="color:${r.ok?'var(--acc)':'var(--bad)'}">${r.c>=0?'▲':'▼'} ${nf.format(Math.abs(r.c))}%</td></tr>`).join('')+
+  `</table></div>`}
+
+/* riwayat */
+function drawHist(){
+ const a=sortedPer();
+ if(!a.length){$('hist').innerHTML=`<div class="empty">Belum ada data ${P[per].toLowerCase()} untuk ${T[tab].name}. Isi angka di menu Input lalu simpan.</div>`;return}
+ const o=T[tab].out;
+ $('hist').innerHTML='<table><tr><th>Periode</th>'+o.map(x=>`<th>${x[0]}</th>`).join('')+'<th></th></tr>'+
+ a.map(e=>`<tr><td>${lab(e)}</td>`+o.map(([n,f,t])=>`<td>${fmt(f(e.d),t)}</td>`).join('')+`<td><button data-i="${e.id}">Hapus</button></td></tr>`).join('')+'</table>';
+ $('hist').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  if(confirm('Hapus data periode ini?')){store(tab,load(tab).filter(e=>String(e.id)!==b.dataset.i));refresh();toast('Data dihapus')}})}
+function refresh(){calc();drawHist();if(page==='grafik')drawTrend();if(page==='analisis')drawAna()}
+
+/* simpan & aksi */
+function clearForm(){T[tab].inp.forEach(([k])=>$('f_'+k).value='');$('dari').value='';$('sampai').value='';refresh()}
+function saveNow(){
+ const d=read(),dari=$('dari').value,sampai=$('sampai').value;
+ if(!dari||!sampai){alert('Isi tanggal dari dan sampai dulu.');return false}
+ if(sampai<dari){alert('Tanggal sampai harus sama dengan atau setelah tanggal dari.');return false}
+ if(!hasData(d)){alert('Isi minimal satu angka dulu.');return false}
+ const a=load(tab);a.push({id:Date.now(),per,dari,sampai,d});store(tab,a);
+ clearForm();toast('Periode tersimpan');return true}
+$('save').onclick=()=>{if(saveNow())go('hasil')};
+$('toIn').onclick=()=>go('input');
+$('dari').addEventListener('change',()=>{autoEnd();refresh()});
+$('tm').addEventListener('input',drawTrend);$('tmet').addEventListener('change',drawTrend);
+$('m-ex').onclick=()=>{closeAll();const e=T[tab].ex;T[tab].inp.forEach(([k])=>$('f_'+k).value=e[k]);
+ if(!$('dari').value){$('dari').value=today();autoEnd()}go('input');refresh();toast('Data contoh terisi')};
+$('m-clr').onclick=()=>{closeAll();clearForm();toast('Form dikosongkan')};
+$('m-in').onclick=()=>{closeAll();go('input')};
+$('m-del').onclick=()=>{closeAll();if(confirm('Hapus semua riwayat '+T[tab].name+'? Tindakan ini tidak bisa dibatalkan.')){store(tab,[]);refresh();toast('Riwayat dihapus')}};
+
+/* unduh */
+function exportXlsx(keys){
+ if(typeof XLSX==='undefined'){alert('Pustaka Excel gagal dimuat (perlu internet). Gunakan CSV.');return}
+ if(hasData(read())&&confirm('Ada data di form yang belum disimpan. Simpan dulu agar ikut masuk Excel?')&&!saveNow())return;
+ const wb=XLSX.utils.book_new();let n=0;
+ keys.forEach(k=>{
+  const a=load(k).sort((x,y)=>(x.dari||'').localeCompare(y.dari||''));if(!a.length)return;n++;
+  const I=T[k].inp,O=T[k].out;
+  const rows=[['Dari','Sampai','Jenis'].concat(I.map(x=>x[1]),O.map(x=>x[0]))];
+  a.forEach(e=>{const r=[e.dari?fd(e.dari):(e.lbl||''),e.sampai?fd(e.sampai):'',P[e.per]];
+   I.forEach(([c])=>r.push(e.d[c]));
+   O.forEach(([m,f,t])=>{const v=f(e.d);r.push(isFinite(v)?{t:'n',v,z:t==='p'?'0.00%':t==='rp'?'"Rp"#,##0':'#,##0.00'}:'-')});
+   rows.push(r)});
+  rows.push([]);rows.push(['Rumus']);O.forEach(([m,f,t,r])=>rows.push([m,r]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=rows[0].map(()=>({wch:18}));
+  XLSX.utils.book_append_sheet(wb,ws,T[k].name.slice(0,31))});
+ if(!n){alert('Belum ada riwayat tersimpan untuk diunduh. Simpan data dulu.');return}
+ XLSX.writeFile(wb,'laporan-insight-'+(keys.length>1?'semua':keys[0])+'-'+today()+'.xlsx');toast('Excel diunduh')}
+function exportCsv(){
+ const a=load(tab);if(!a.length){alert('Belum ada riwayat untuk diunduh.');return}
+ const I=T[tab].inp,O=T[tab].out,q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+ const rows=[['Dari','Sampai','Jenis'].concat(I.map(x=>x[1]),O.map(x=>x[0])).map(q).join(',')];
+ a.forEach(e=>rows.push([e.dari||e.lbl||'',e.sampai||'',P[e.per]].concat(I.map(([k])=>e.d[k]),O.map(([n,f])=>{const v=f(e.d);return isFinite(v)?v:''})).map(q).join(',')));
+ const l=document.createElement('a');l.href=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv'}));
+ l.download='riwayat-'+tab+'.csv';l.click();toast('CSV diunduh')}
+$('s-all').onclick=()=>{closeAll();exportXlsx(Object.keys(T))};
+$('s-one').onclick=()=>{closeAll();exportXlsx([tab])};
+$('s-csv').onclick=()=>{closeAll();exportCsv()};
+
+drawPer();setCat('mkt');go('analisis');
+if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>
